@@ -1,17 +1,13 @@
-import logging
 from mqtt_handler import MQTTHandler
-
-
-def setup_logging():
-    logging.basicConfig(filename='debug.log',
-                        level=logging.DEBUG,
-                        format='%(asctime)s - %(levelname)s - %(message)s')
-
+from logger_config import setup_logging
+import logging
 
 def main():
     setup_logging()
-    print("Device started.")
+    logging.info("=== MQTT Application Starting ===")
+    logging.debug("Initializing components...")
     mqtt_handler = MQTTHandler()
+    logging.info("Starting MQTT handler...")
     mqtt_handler.run()
 
 

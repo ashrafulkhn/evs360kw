@@ -14,17 +14,14 @@ class MQTTHandler:
         self.client.on_message = self.on_message
         
         try:
-            print("Connecting to MQTT broker...")
+            logging.info("Connecting to MQTT broker...")
             result = self.client.connect("broker.hivemq.com", 1883, 60)
             if result == 0:
-                print("Successfully connected to MQTT broker")
-                logging.info("Connected to MQTT broker")
+                logging.info("✓ Successfully connected to MQTT broker")
             else:
-                print(f"Failed to connect to MQTT broker with result code {result}")
-                logging.error(f"Failed to connect to MQTT broker with result code {result}")
+                logging.error(f"✗ Failed to connect to MQTT broker (code: {result})")
         except Exception as e:
-            print(f"Failed to connect to MQTT broker: {str(e)}")
-            logging.error(f"Failed to connect to MQTT broker: {str(e)}")
+            logging.error(f"✗ Connection error: {str(e)}")
             raise
     
     def on_connect(self, client, userdata, flags, rc):
