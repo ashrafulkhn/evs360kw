@@ -2,6 +2,7 @@ from mqtt_handler import MQTTHandler
 from logger_config import setup_logging
 import logging
 
+
 def main():
     setup_logging()
     logging.info("=== MQTT Application Starting ===")
