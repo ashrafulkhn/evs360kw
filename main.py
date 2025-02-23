@@ -19,6 +19,13 @@ def main():
     logging.debug("Initializing components...")
     mqtt_handler = MQTTHandler()
     logging.info("Starting MQTT handler...")
+    # Get single gun data
+    gun1_data = mqtt_handler.message_processor.get_gun_data(1)
+    print(f"Gun 1 data: {gun1_data}")
+
+    # Get all guns data
+    all_data = get_all_guns_data(mqtt_handler)
+    print(f"All guns data: {all_data}")
     mqtt_handler.run()
 
 
