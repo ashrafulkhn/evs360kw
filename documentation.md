@@ -12,9 +12,10 @@ The entry point of the application that initializes logging and starts the MQTT 
 ### 2. MQTT Handler (`mqtt_handler.py`)
 - Manages MQTT client connections
 - Connects to broker.hivemq.com on port 1883
-- Subscribes to topics in the format `TopicX/DY` where:
-  - X ranges from 1 to 10
-  - Y is either D1, D2, or D3
+- Subscribes to topics in the format `vesec/gun_id/message_type/device` where:
+  - gun_id ranges from 1 to 2
+  - message_type is one of: soc, demand, vehicle_status
+  - device is one of: D1, D2, D3, central
 - Stores message data with timestamps
 - Handles connection and message processing errors
 

@@ -26,11 +26,15 @@ class MQTTHandler:
     
     def on_connect(self, client, userdata, flags, rc):
         logging.info(f"Connected with result code {rc}")
-        for d in ['D1', 'D2', 'D3']:
-            for i in range(1, 11):
-                topic = f"Topic{i}/{d}"
-                self.client.subscribe(topic)
-                logging.debug(f"Subscribed to {topic}")
+        devices = ["D1", "D2", "D3", "central"]
+        message_types = ["soc", "demand", "vehicle_status"]
+        
+        for device in devices:
+            for gun_id in range(1, 3):
+                for msg_type in message_types:
+                    topic = f"vesec/{gun_id}/{msg_type}/{device}"
+                    self.client.subscribe(topic)
+                    logging.debug(f"Subscribed to {topic}")
     
     def on_message(self, client, userdata, msg):
         try:
