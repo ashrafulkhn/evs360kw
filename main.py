@@ -2,6 +2,19 @@ from mqtt_handler import MQTTHandler
 from logger_config import setup_logging
 import logging
 import json
+import threading
+import time
+
+
+def monitor_gun_data(mqtt_handler):
+    previous_data = {}
+    while True:
+        current_data = get_all_guns_data(mqtt_handler)
+        if current_data != previous_data:
+            print("\n=== Gun Data Update ===")
+            print(current_data)
+            previous_data = current_data
+        time.sleep(1)  # Check every second
 
 
 def get_all_guns_data(mqtt_handler):
@@ -19,13 +32,13 @@ def main():
     logging.debug("Initializing components...")
     mqtt_handler = MQTTHandler()
     logging.info("Starting MQTT handler...")
-    # Get single gun data
-    gun1_data = mqtt_handler.message_processor.get_gun_data(1)
-    print(f"Gun 1 data: {gun1_data}")
-
-    # Get all guns data
-    all_data = get_all_guns_data(mqtt_handler)
-    print(f"All guns data: {all_data}")
+    
+    # Start monitoring thread
+    monitor_thread = threading.Thread(target=monitor_gun_data, args=(mqtt_handler,), daemon=True)
+    monitor_thread.start()
+    logging.info("Started monitoring thread")
+    
+    # Run MQTT handler
     mqtt_handler.run()
 
 
