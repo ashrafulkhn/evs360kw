@@ -7,13 +7,26 @@ import time
 
 
 def monitor_gun_data(mqtt_handler):
-    previous_data = {}
+    previous_states = {i: {'soc': None, 'demand': None, 'status': None} for i in range(1, 7)}
+    
     while True:
-        current_data = get_all_guns_data(mqtt_handler)
-        if current_data != previous_data:
-            print("\n=== Gun Data Update ===")
-            print(current_data)
-            previous_data = current_data
+        for gun_number in range(1, 7):
+            gun = mqtt_handler.message_processor.guns[gun_number]
+            prev_state = previous_states[gun_number]
+            
+            # Check each parameter
+            if gun.soc != prev_state['soc']:
+                gun.soc_changed(gun.soc)
+                prev_state['soc'] = gun.soc
+                
+            if gun.demand != prev_state['demand']:
+                gun.demand_changed(gun.demand)
+                prev_state['demand'] = gun.demand
+                
+            if gun.status != prev_state['status']:
+                gun.status_changed(gun.status)
+                prev_state['status'] = gun.status
+                
         time.sleep(1)  # Check every second
 
 
