@@ -1,5 +1,8 @@
+import logging
+
 
 class Gun:
+
     def __init__(self, gun_number):
         self.gun_number = gun_number
         self.soc = None
