@@ -11,7 +11,7 @@ from logger_config import setup_logging
 setup_logging()
 logger = logging.getLogger(__name__)
 
-REPO_URL = "YOUR_REPOSITORY_URL"  # Replace with your repository URL
+REPO_URL = "https://github.com/YOUR_USERNAME/YOUR_REPO_NAME"  # Replace with your repository URL
 BRANCH_NAME = "main"  # Replace with your branch name
 
 def check_and_clone_repo():
