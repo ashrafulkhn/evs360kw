@@ -48,6 +48,8 @@ class ContactorController:
         self.connections = {}
         # Dictionary to track which modules are connected to which guns (reverse lookup)
         self.gun_to_modules = {i: [] for i in range(1, 7)}
+        # Initialize contactors dictionary
+        self.contactors = {}
         self._initialize_contactors()
 
     def _initialize_contactors(self):
