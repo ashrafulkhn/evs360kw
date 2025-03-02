@@ -15,23 +15,38 @@ class Gun:
 
     def update_data(self, message_type, value):
         if message_type == "soc":
-            if self.soc != value:
-                self.soc = value
-                Gun.soc_data[f"Gun{self.gun_number}"] = value
-                self.soc_changed(Gun.soc_data)
-                print("\nSOC Data for all guns:", Gun.soc_data)
+            # Convert SOC to float
+            try:
+                float_value = float(value)
+                if self.soc != float_value:
+                    self.soc = float_value
+                    Gun.soc_data[f"Gun{self.gun_number}"] = float_value
+                    self.soc_changed(Gun.soc_data)
+                    print("\nSOC Data for all guns:", Gun.soc_data)
+            except ValueError:
+                logging.error(f"Invalid SOC value: {value}")
         elif message_type == "demand":
-            if self.demand != value:
-                self.demand = value
-                Gun.demand_data[f"Gun{self.gun_number}"] = value
-                self.demand_changed(Gun.demand_data)
-                print("\nDemand Data for all guns:", Gun.demand_data)
+            # Convert demand to float
+            try:
+                float_value = float(value)
+                if self.demand != float_value:
+                    self.demand = float_value
+                    Gun.demand_data[f"Gun{self.gun_number}"] = float_value
+                    self.demand_changed(Gun.demand_data)
+                    print("\nDemand Data for all guns:", Gun.demand_data)
+            except ValueError:
+                logging.error(f"Invalid demand value: {value}")
         elif message_type == "vehicle_status":
-            if self.status != value:
-                self.status = value
-                Gun.status_data[f"Gun{self.gun_number}"] = value
-                self.status_changed(Gun.status_data)
-                print("\nStatus Data for all guns:", Gun.status_data)
+            try:
+                # Try to convert status to integer
+                int_value = int(value)
+                if self.status != int_value:
+                    self.status = int_value
+                    Gun.status_data[f"Gun{self.gun_number}"] = int_value
+                    self.status_changed(Gun.status_data)
+                    print("\nStatus Data for all guns:", Gun.status_data)
+            except ValueError:
+                logging.error(f"Invalid vehicle_status value: {value}")
 
     def soc_changed(self, value):
         logging.info(f"Gun {self.gun_number} SOC changed to: {value}")
@@ -57,15 +72,8 @@ class Gun:
             if not hasattr(Gun, '_contactor_controller'):
                 Gun._contactor_controller = ContactorController()
             
-            # Convert demand to float if it's a string
-            if isinstance(value, str):
-                try:
-                    demand_value = float(value)
-                except ValueError:
-                    logging.error(f"Invalid demand value: {value}")
-                    return
-            else:
-                demand_value = float(value)
+            # We now get a float directly since we convert in update_data
+            demand_value = self.demand
             
             # Get max allowed power for this gun
             max_power = Gun._config_manager.get_gun_max_power(self.gun_number)
