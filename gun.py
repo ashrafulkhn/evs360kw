@@ -43,6 +43,7 @@ class Gun:
         try:
             from demand_processor import DemandProcessor
             from config_manager import ConfigManager
+            from contactor_controller import ContactorController
             
             # Create config manager for logging
             if not hasattr(Gun, '_config_manager'):
@@ -51,6 +52,10 @@ class Gun:
             # Singleton pattern - create or get existing processor
             if not hasattr(Gun, '_demand_processor'):
                 Gun._demand_processor = DemandProcessor()
+            
+            # Get or create contactor controller
+            if not hasattr(Gun, '_contactor_controller'):
+                Gun._contactor_controller = ContactorController()
             
             # Convert demand to float if it's a string
             if isinstance(value, str):
@@ -74,8 +79,36 @@ class Gun:
             allocation = Gun._demand_processor.get_gun_power_allocation(self.gun_number)
             logging.info(f"Gun {self.gun_number} power allocation: {allocation}")
             
+            # Display allocation for all guns when demand changes
+            self.display_all_gun_allocations()
+            
         except Exception as e:
             logging.error(f"Error processing demand change: {str(e)}")
+            
+    def display_all_gun_allocations(self):
+        """Display active guns with their power modules and closed contactors"""
+        try:
+            demand_processor = Gun._demand_processor
+            contactor_controller = Gun._contactor_controller
+            
+            # Display header
+            logging.info("=== CURRENT GUN ALLOCATIONS ===")
+            
+            # For each gun, display its allocation if active
+            for gun_id in range(1, 7):
+                # Get assigned modules from demand processor
+                allocation = demand_processor.get_gun_power_allocation(gun_id)
+                if 'modules_assigned' in allocation and allocation['modules_assigned']:
+                    # Get connected modules from contactor controller
+                    connected_modules = contactor_controller.get_connected_modules(gun_id)
+                    
+                    logging.info(f"Gun {gun_id}:")
+                    logging.info(f"  - Demand: {allocation.get('demand', 0)} kW")
+                    logging.info(f"  - Assigned modules: {allocation.get('modules_assigned', [])}")
+                    logging.info(f"  - Connected via contactors: {connected_modules}")
+                    logging.info(f"  - Total capacity: {allocation.get('total_capacity_kw', 0)} kW")
+        except Exception as e:
+            logging.error(f"Error displaying gun allocations: {str(e)}")
 
     def status_changed(self, value):
         logging.info(f"Gun {self.gun_number} Status changed to: {value}")
