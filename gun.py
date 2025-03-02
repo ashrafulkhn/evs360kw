@@ -42,6 +42,11 @@ class Gun:
         # Process the demand change through the demand processor
         try:
             from demand_processor import DemandProcessor
+            from config_manager import ConfigManager
+            
+            # Create config manager for logging
+            if not hasattr(Gun, '_config_manager'):
+                Gun._config_manager = ConfigManager()
             
             # Singleton pattern - create or get existing processor
             if not hasattr(Gun, '_demand_processor'):
@@ -56,6 +61,11 @@ class Gun:
                     return
             else:
                 demand_value = float(value)
+            
+            # Get max allowed power for this gun
+            max_power = Gun._config_manager.get_gun_max_power(self.gun_number)
+            if demand_value > max_power:
+                logging.warning(f"Gun {self.gun_number} demand of {demand_value}kW exceeds max allowed {max_power}kW")
             
             # Process the demand change
             Gun._demand_processor.process_demand_change(self.gun_number, demand_value)

@@ -3,10 +3,12 @@ import logging
 from typing import Dict, List
 from power_module_controller import PowerModuleController
 from contactor_controller import ContactorController
+from config_manager import ConfigManager
 
 class DemandProcessor:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
+        self.config = ConfigManager()
         self.power_controller = PowerModuleController()
         self.contactor_controller = ContactorController()
         
@@ -37,7 +39,7 @@ class DemandProcessor:
         self._reassign_modules()
     
     def _reassign_modules(self):
-        """Reassign power modules to guns based on current demands"""
+        """Reassign power modules to guns based on current demands and power limits"""
         # Sort guns by demand (highest first)
         sorted_guns = sorted(self.gun_demands.items(), key=lambda x: x[1], reverse=True)
         
@@ -48,14 +50,22 @@ class DemandProcessor:
         assigned_modules = set()
         
         # Assign modules to guns based on demand
-        module_power = 40.0  # kW per module
+        module_power = self.config.get_module_power_capacity()  # kW per module
         
         for gun_id, demand in sorted_guns:
             if demand <= 0:
                 continue
-                
+            
+            # Get the maximum power allowed for this gun from config
+            max_allowed_power = self.config.get_gun_max_power(gun_id)
+            
+            # Limit demand to max allowed power
+            capped_demand = min(demand, max_allowed_power)
+            if capped_demand < demand:
+                self.logger.warning(f"Gun {gun_id} demand of {demand}kW exceeds max allowed {max_allowed_power}kW, capping demand")
+            
             # Calculate how many modules this gun needs
-            modules_needed = min(9, max(1, int((demand + module_power - 1) // module_power)))
+            modules_needed = min(9, max(1, int((capped_demand + module_power - 1) // module_power)))
             modules_assigned = 0
             
             # Assign available modules
@@ -65,7 +75,7 @@ class DemandProcessor:
                     assigned_modules.add(module_id)
                     modules_assigned += 1
             
-            self.logger.info(f"Assigned {modules_assigned} modules to Gun {gun_id} (demand: {demand}kW)")
+            self.logger.info(f"Assigned {modules_assigned} modules to Gun {gun_id} (demand: {capped_demand}kW/{demand}kW requested)")
         
         # Apply the assignments
         self._apply_assignments()
@@ -103,12 +113,16 @@ class DemandProcessor:
             return {"error": "Invalid gun ID"}
         
         modules = self.gun_module_assignments.get(gun_id, [])
-        total_capacity = len(modules) * 40.0  # Each module provides 40kW
+        module_power = self.config.get_module_power_capacity()
+        total_capacity = len(modules) * module_power
+        max_allowed = self.config.get_gun_max_power(gun_id)
         
         return {
             "gun_id": gun_id,
             "demand": self.gun_demands[gun_id],
+            "max_allowed_kw": max_allowed,
             "modules_assigned": modules,
             "total_capacity_kw": total_capacity,
+            "module_power_kw": module_power,
             "status": "active" if modules else "inactive"
         }

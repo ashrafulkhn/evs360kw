@@ -6,3 +6,5 @@ paho-mqtt>=2.1.0
 gitpython>=3.1.40
 pandoc
 pandoc
+configparser
+configparser
