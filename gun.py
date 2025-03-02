@@ -38,6 +38,34 @@ class Gun:
 
     def demand_changed(self, value):
         logging.info(f"Gun {self.gun_number} Demand changed to: {value}")
+        
+        # Process the demand change through the demand processor
+        try:
+            from demand_processor import DemandProcessor
+            
+            # Singleton pattern - create or get existing processor
+            if not hasattr(Gun, '_demand_processor'):
+                Gun._demand_processor = DemandProcessor()
+            
+            # Convert demand to float if it's a string
+            if isinstance(value, str):
+                try:
+                    demand_value = float(value)
+                except ValueError:
+                    logging.error(f"Invalid demand value: {value}")
+                    return
+            else:
+                demand_value = float(value)
+            
+            # Process the demand change
+            Gun._demand_processor.process_demand_change(self.gun_number, demand_value)
+            
+            # Get allocation information after processing
+            allocation = Gun._demand_processor.get_gun_power_allocation(self.gun_number)
+            logging.info(f"Gun {self.gun_number} power allocation: {allocation}")
+            
+        except Exception as e:
+            logging.error(f"Error processing demand change: {str(e)}")
 
     def status_changed(self, value):
         logging.info(f"Gun {self.gun_number} Status changed to: {value}")
